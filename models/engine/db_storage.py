@@ -13,9 +13,6 @@ from models.review import Review
 from models.state import State
 from models.user import User
 
-classes = {"Amenity": Amenity, "City": City,
-           "Place": Place, "Review": Review, "State": State, "User": User}
-
 
 class DBStorage:
     __engine = None
@@ -33,15 +30,16 @@ class DBStorage:
             Base.metadata.drop_all(self.__engine)
 
     def all(self, cls=None):
-        """query on the current database session"""
-        new_dict = {}
-        for clss in classes:
-            if cls is None or cls is classes[clss] or cls is clss:
-                objs = self.__session.query(classes[clss]).all()
-                for obj in objs:
-                    key = obj.__class__.__name__ + '.' + obj.id
-                    new_dict[key] = obj
-        return (new_dict)
+        """ Returns a dictionary of objects """
+        if cls:
+            if isinstance(cls, str):
+                cls = models.get(cls)
+            return {obj.__class__.__name__ + "." + obj.id: obj for obj in self.__session.query(cls)}
+        else:
+            obj_dict = {}
+            for cls in models.classes:
+                obj_dict.update({obj.__class__.__name__ + "." + obj.id: obj for obj in self.__session.query(cls)})
+            return obj_dict
 
     def new(self, obj):
         """ Adds new object to storage dictionary """
