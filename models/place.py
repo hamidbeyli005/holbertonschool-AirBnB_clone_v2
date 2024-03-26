@@ -1,9 +1,10 @@
 #!/usr/bin/python3
 """ Place Module for HBNB project """
 from models.base_model import BaseModel,Base
-from sqlalchemy import Column, Integer, String, Float, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, Table
 from sqlalchemy.orm import relationship
 from models.engine.file_storage import FileStorage
+
 
 class Place(BaseModel, Base):
     """ A place to stay """
@@ -19,12 +20,27 @@ class Place(BaseModel, Base):
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
     amenity_ids = []
-    user = relationship("User", back_populates="places")
-    city = relationship("City", back_populates="places", foreign_keys=[city_id])
-    reviews = relationship("Review", back_populates="place", cascade="all, delete")
+    # user = relationship("User", back_populates="places")
+    # city = relationship("City", back_populates="places", foreign_keys=[city_id])
+    reviews = relationship("Review", backref="place", cascade="all, delete")
+    place_amenity = Table('place_amenity', Base.metadata,
+    Column('place_id', String(60), ForeignKey('places.id'), primary_key=True, nullable=False),
+    Column('amenity_id', String(60), ForeignKey('amenities.id'), primary_key=True, nullable=False)
+    )
+    amenities = relationship("Amenity", secondary=place_amenity, viewonly=False)
 
     @property
     def reviews(self):
         storage = FileStorage()
         return [review for review in storage.all(Review).values()
                 if review.place_id == self.id]
+
+    @property
+    def amenities(self):
+        storage = FileStorage()
+        return [storage.get(Amenity, amenity_id) for amenity_id in self.amenity_ids]
+
+    @amenities.setter
+    def amenities(self, amenity):
+        if isinstance(amenity, Amenity):
+            self.amenity_ids.append(amenity.id)
