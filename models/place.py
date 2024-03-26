@@ -23,6 +23,7 @@ class Place(BaseModel, Base):
     city = relationship("City", back_populates="places", foreign_keys=[city_id])
     reviews = relationship("Review", back_populates="place", cascade="all, delete")
 
+    @property
     def reviews(self):
         storage = FileStorage()
         return [review for review in storage.all(Review).values()
