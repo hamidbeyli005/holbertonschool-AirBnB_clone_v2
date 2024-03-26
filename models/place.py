@@ -31,16 +31,19 @@ class Place(BaseModel, Base):
 
     @property
     def reviews(self):
+        """Getter function for reviews"""
         storage = FileStorage()
         return [review for review in storage.all(Review).values()
                 if review.place_id == self.id]
 
     @property
     def amenities(self):
+        """Getter function for amenities"""
         storage = FileStorage()
         return [storage.get(Amenity, amenity_id) for amenity_id in self.amenity_ids]
 
     @amenities.setter
     def amenities(self, amenity):
+        """Setter function for amenities"""
         if isinstance(amenity, Amenity):
             self.amenity_ids.append(amenity.id)
