@@ -16,3 +16,10 @@ class State(BaseModel, Base):
     def __init__(self, *args, **kwargs):
         """initializes state"""
         super().__init__(*args, **kwargs)
+
+    @property
+    def cities(self):
+        """Getter function for cities"""
+        storage = FileStorage()
+        return [city for city in storage.all(City).values()
+                if city.state_id == self.id]
