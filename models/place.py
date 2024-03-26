@@ -3,6 +3,7 @@
 from models.base_model import BaseModel,Base
 from sqlalchemy import Column, Integer, String, Float, ForeignKey
 from sqlalchemy.orm import relationship
+from models.engine.file_storage import FileStorage
 
 class Place(BaseModel, Base):
     """ A place to stay """
@@ -20,3 +21,9 @@ class Place(BaseModel, Base):
     amenity_ids = []
     user = relationship("User", back_populates="places")
     city = relationship("City", back_populates="places", foreign_keys=[city_id])
+    reviews = relationship("Review", back_populates="place", cascade="all, delete")
+
+    def reviews(self):
+        storage = FileStorage()
+        return [review for review in storage.all(Review).values()
+                if review.place_id == self.id]
