@@ -24,13 +24,14 @@ class Place(BaseModel, Base):
     longitude = Column(Float, nullable=True)
     amenity_ids = []
     # user = relationship("User", back_populates="places")
-    # city = relationship("City", back_populates="places", foreign_keys=[city_id])
     reviews = relationship("Review", backref="place", cascade="all, delete")
     place_amenity = Table('place_amenity', Base.metadata,
-                          Column('place_id', String(60), ForeignKey(
-                              'places.id'), primary_key=True, nullable=False),
-                          Column('amenity_id', String(60), ForeignKey(
-                              'amenities.id'), primary_key=True, nullable=False)
+                          Column('place_id', String(60),
+                                 ForeignKey('places.id'),
+                                 primary_key=True, nullable=False),
+                          Column('amenity_id', String(60),
+                                 ForeignKey('amenities.id'),
+                                 primary_key=True, nullable=False)
                           )
     amenities = relationship(
         "Amenity", secondary=place_amenity, viewonly=False)
@@ -47,7 +48,8 @@ class Place(BaseModel, Base):
         def amenities(self):
             """Getter function for amenities"""
             storage = FileStorage()
-            return [storage.get(Amenity, amenity_id) for amenity_id in self.amenity_ids]
+            return [storage.get(Amenity, amenity_id)
+                    for amenity_id in self.amenity_ids]
 
         @amenities.setter
         def amenities(self, amenity):
