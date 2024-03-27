@@ -4,7 +4,7 @@ from os import getenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from models.amenity import Amenity
-from models.base_model import  Base
+from models.base_model import Base
 from models.city import City
 from models.place import Place
 from models.review import Review
@@ -13,6 +13,7 @@ from models.user import User
 
 classes = {"Amenity": Amenity, "City": City,
            "Place": Place, "Review": Review, "State": State, "User": User}
+
 
 class DBStorage:
     """This class is the link between objects and the database"""
