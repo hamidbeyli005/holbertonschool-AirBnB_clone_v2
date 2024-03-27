@@ -4,6 +4,10 @@ from models.base_model import BaseModel,Base
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, Table
 from sqlalchemy.orm import relationship
 from models.engine.file_storage import FileStorage
+from os import getenv
+from models.review import Review
+from models.amenity import Amenity
+
 
 
 class Place(BaseModel, Base):
@@ -29,21 +33,23 @@ class Place(BaseModel, Base):
     )
     amenities = relationship("Amenity", secondary=place_amenity, viewonly=False)
 
-    @property
-    def reviews(self):
-        """Getter function for reviews"""
-        storage = FileStorage()
-        return [review for review in storage.all(Review).values()
-                if review.place_id == self.id]
 
-    @property
-    def amenities(self):
-        """Getter function for amenities"""
-        storage = FileStorage()
-        return [storage.get(Amenity, amenity_id) for amenity_id in self.amenity_ids]
+    if getenv("HBNB_TYPE_STORAGE", None) != "db":
+        @property
+        def reviews(self):
+            """Getter function for reviews"""
+            storage = FileStorage()
+            return [review for review in storage.all(Review).values()
+                    if review.place_id == self.id]
 
-    @amenities.setter
-    def amenities(self, amenity):
-        """Setter function for amenities"""
-        if isinstance(amenity, Amenity):
-            self.amenity_ids.append(amenity.id)
+        @property
+        def amenities(self):
+            """Getter function for amenities"""
+            storage = FileStorage()
+            return [storage.get(Amenity, amenity_id) for amenity_id in self.amenity_ids]
+
+        @amenities.setter
+        def amenities(self, amenity):
+            """Setter function for amenities"""
+            if isinstance(amenity, Amenity):
+                self.amenity_ids.append(amenity.id)
