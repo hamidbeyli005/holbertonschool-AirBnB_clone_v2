@@ -1,13 +1,12 @@
 #!/usr/bin/python3
 """ Place Module for HBNB project """
-from models.base_model import BaseModel,Base
+from models.base_model import BaseModel, Base
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, Table
 from sqlalchemy.orm import relationship
 from models.engine.file_storage import FileStorage
 from os import getenv
 from models.review import Review
 from models.amenity import Amenity
-
 
 
 class Place(BaseModel, Base):
@@ -28,11 +27,13 @@ class Place(BaseModel, Base):
     # city = relationship("City", back_populates="places", foreign_keys=[city_id])
     reviews = relationship("Review", backref="place", cascade="all, delete")
     place_amenity = Table('place_amenity', Base.metadata,
-    Column('place_id', String(60), ForeignKey('places.id'), primary_key=True, nullable=False),
-    Column('amenity_id', String(60), ForeignKey('amenities.id'), primary_key=True, nullable=False)
-    )
-    amenities = relationship("Amenity", secondary=place_amenity, viewonly=False)
-
+                          Column('place_id', String(60), ForeignKey(
+                              'places.id'), primary_key=True, nullable=False),
+                          Column('amenity_id', String(60), ForeignKey(
+                              'amenities.id'), primary_key=True, nullable=False)
+                          )
+    amenities = relationship(
+        "Amenity", secondary=place_amenity, viewonly=False)
 
     if getenv("HBNB_TYPE_STORAGE", None) != "db":
         @property
