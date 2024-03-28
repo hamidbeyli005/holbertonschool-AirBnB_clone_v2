@@ -137,7 +137,6 @@ class HBNBCommand(cmd.Cmd):
     def do_create(self, args):
         """ Create an object of any class"""
         args = args.split()
-
         if len(args) == 0:
             print("** class name missing **")
             return
@@ -148,8 +147,10 @@ class HBNBCommand(cmd.Cmd):
         new_dict = self._create_dict_instance(args[1:])
         # sending args on form of kwargs
         new_instance = HBNBCommand.classes[args[0]](**new_dict)
-        print(new_instance)
-        new_instance.save()
+        storage.new(new_instance)
+        storage.save()
+        print(new_instance.id)
+        
 
     # def do_create(self, args):
     #     """ Create an object of any class"""
