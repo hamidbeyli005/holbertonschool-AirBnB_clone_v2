@@ -3,13 +3,42 @@
 import unittest
 from unittest.mock import MagicMock, patch
 from models.engine import db_storage
+from models.state import State
+from os import getenv
+import MySQLdb
+
 
 
 class test_fileStorage(unittest.TestCase):
     """ """
 
+    @unittest.skipIf(getenv("HBNB_TYPE_STORAGE") != 'db',
+                    "can't run if storage is file")
     def setUp(self):
         self.storage = db_storage.DBStorage()
+        if getenv("HBNB_TYPE_STORAGE") == "db":
+            self.db = MySQLdb.connect(getenv("HBNB_MYSQL_HOST"),
+                                    getenv("HBNB_MYSQL_USER"),
+                                    getenv("HBNB_MYSQL_PWD"),
+                                    getenv("HBNB_MYSQL_DB"))
+            self.cursor = self.db.cursor()
+
+    @unittest.skipIf(getenv("HBNB_TYPE_STORAGE") != 'db',
+                    "can't run if storage is file")
+    def tearDown(self):
+        """at the end of the test this will tear it down"""
+        if getenv("HBNB_TYPE_STORAGE") == "db":
+            self.db.close()
+        
+    @unittest.skipIf(getenv("HBNB_TYPE_STORAGE") != 'db',
+                    "can't run if storage is file")
+    def test_new_DBStorage(self):
+        """Tests for new() method"""
+        nb = self.cursor.execute("SELECT COUNT(*) FROM states")
+        state = State(name="Oregon")
+        state.save()
+        nb1 = self.cursor.execute("SELECT COUNT(*) FROM states")
+        self.assertEqual(nb1 - nb, 0)
 
     @patch.object(db_storage.DBStorage, '_DBStorage__session')
     def test_delete_object(self, mock_session):
