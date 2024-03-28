@@ -1,27 +1,92 @@
+#!/usr/bin/python3
+""" Module for testing db storage """
 import unittest
-from unittest.mock import MagicMock, patch
-from models.engine import db_storage
+from models.engine.db_storage import DBStorage
+from models.base_model import BaseModel
+from models.user import User
 from models.state import State
+from models.city import City
+from models.amenity import Amenity
+from models.place import Place
+from models.review import Review
+from models import storage
+from os import getenv
+import MySQLdb
+
 
 class TestDBStorage(unittest.TestCase):
+
+    @unittest.skipIf(getenv("HBNB_TYPE_STORAGE") != 'db',
+                    "can't run if storage is file")
     def setUp(self):
-        self.storage = db_storage.DBStorage()
+        """set up for test"""
+        if getenv("HBNB_TYPE_STORAGE") == "db":
+            self.db = MySQLdb.connect(getenv("HBNB_MYSQL_HOST"),
+                                    getenv("HBNB_MYSQL_USER"),
+                                    getenv("HBNB_MYSQL_PWD"),
+                                    getenv("HBNB_MYSQL_DB"))
+            self.cursor = self.db.cursor()
 
-    @patch.object(db_storage.DBStorage, '_DBStorage__session')
-    def test_all_with_class(self, mock_session):
-        mock_query = MagicMock()
-        mock_session.query.return_value = mock_query
-        self.storage.all(State)
-        mock_session.query.assert_called_once_with(State)
-        mock_query.all.assert_called_once()
+    @unittest.skipIf(getenv("HBNB_TYPE_STORAGE") != 'db',
+                    "can't run if storage is file")
+    def tearDown(self):
+        if getenv("HBNB_TYPE_STORAGE") == "db":
+            self.db.close()
 
-    @patch.object(db_storage.DBStorage, '_DBStorage__session')
-    def test_all_without_class(self, mock_session):
-        mock_query = MagicMock()
-        mock_session.query.return_value = mock_query
-        self.storage.all()
-        assert mock_session.query.call_count == len(db_storage.classes)
-        mock_query.all.assert_called()
+    @unittest.skipIf(getenv("HBNB_TYPE_STORAGE") != 'db',
+                    "can't run if storage is file")
+    def test_attributes_DBStorage(self):
+        """Tests for class attributes"""
+        self.assertTrue(hasattr(DBStorage, 'all'))
+        self.assertTrue(hasattr(DBStorage, 'new'))
+        self.assertTrue(hasattr(DBStorage, 'save'))
+        self.assertTrue(hasattr(DBStorage, 'reload'))
+        self.assertTrue(hasattr(DBStorage, 'delete'))
+        self.assertTrue(hasattr(DBStorage, '_DBStorage__engine'))
+        self.assertTrue(hasattr(DBStorage, '_DBStorage__session'))
 
-if __name__ == '__main__':
+    @unittest.skipIf(getenv("HBNB_TYPE_STORAGE") != 'db',
+                    "can't run if storage is file")
+    def test_new_DBStorage(self):
+        """Tests for new() method"""
+        nb = self.cursor.execute("SELECT COUNT(*) FROM states")
+        state = State(name="Oregon")
+        state.save()
+        nb1 = self.cursor.execute("SELECT COUNT(*) FROM states")
+        self.assertEqual(nb1 - nb, 0)
+
+    @unittest.skipIf(getenv("HBNB_TYPE_STORAGE") != 'db',
+                        "can't run if storage is file")
+    def test_reload(self):
+        """Test for reload()"""
+        obj = DBStorage()
+        self.assertTrue(obj._DBStorage__engine is not None)
+
+    def test_all_DBStorage(self):
+        """Tests for the all method"""
+        state = State(name="California")
+        storage.new(state)
+        storage.save()
+        key = '{}.{}'.format(type(state).__name__, state.id)
+        dic = storage.all(State)
+        self.assertTrue(key in dic.keys())
+        state1 = State(name="Oregon")
+        storage.new(state1)
+        storage.save()
+        key1 = '{}.{}'.format(type(state1).__name__, state1.id)
+        dic1 = storage.all()
+        self.assertTrue(key in dic1.keys())
+        self.assertTrue(key1 in dic1.keys())
+        u = User(email="admin@admin", password="admin")
+        storage.new(u)
+        storage.save()
+        key2 = '{}.{}'.format(type(u).__name__, u.id)
+        dic2 = storage.all(User)
+        self.assertTrue(key2 in dic2.keys())
+        self.assertFalse(key1 in dic2.keys())
+        self.assertFalse(key in dic2.keys())
+        self.assertFalse(key2 in dic.keys())
+
+
+if __name__ == "__main__":
     unittest.main()
