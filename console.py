@@ -148,7 +148,7 @@ class HBNBCommand(cmd.Cmd):
         new_dict = self._create_dict_instance(args[1:])
         # sending args on form of kwargs
         new_instance = HBNBCommand.classes[args[0]](**new_dict)
-        print(new_instance.id)
+        print(new_instance)
         new_instance.save()
 
     # def do_create(self, args):
