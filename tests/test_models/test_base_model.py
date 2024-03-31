@@ -47,6 +47,7 @@ class test_basemodel(unittest.TestCase):
         with self.assertRaises(TypeError):
             new = BaseModel(**copy)
 
+    @unittest.skipIf(type_of_storage == "db", "Storage type: Database")
     def test_save(self):
         """ Testing save """
         i = self.value()
@@ -90,3 +91,9 @@ class test_basemodel(unittest.TestCase):
         self.assertEqual(type(new.updated_at), datetime.datetime)
         new.save()
         self.assertNotEqual(new.created_at, new.updated_at)
+
+    def test_kwargs_one(self):
+        """ """
+        n = {'Name': 'test'}
+        new = self.value(**n)
+        self.assertEqual(type(new.id), str)
