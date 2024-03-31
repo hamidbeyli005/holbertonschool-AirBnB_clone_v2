@@ -12,9 +12,8 @@ class test_state(test_basemodel):
         super().__init__(*args, **kwargs)
         self.name = "State"
         self.value = State
+        self.state1 = State(name="New Mexico")
 
     def test_name3(self):
         """ """
-        new = self.value()
-        new.name = "name"
-        self.assertEqual(type(new.name), str)
+        self.assertEqual(type(self.state1.name), str)
