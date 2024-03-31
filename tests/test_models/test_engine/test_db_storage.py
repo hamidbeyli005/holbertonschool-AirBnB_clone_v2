@@ -15,6 +15,3 @@ class TestDBStorage(unittest.TestCase):
         new = BaseModel()
         temp = storage.all()
         self.assertIsInstance(temp, dict)
-
-if __name__ == "__main__":
-    unittest.main()
