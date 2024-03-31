@@ -1,29 +1,66 @@
 #!/usr/bin/python3
-
-from models.base_model import BaseModel
-from models.engine.file_storage import FileStorage
-from console import HBNBCommand
+"""test for console to make it start working"""
 import unittest
-from unittest.mock import patch
 from io import StringIO
+from console import HBNBCommand
+import sys
+from models.base_model import BaseModel
+from models.user import User
+from models.state import State
+from models.city import City
+from models.amenity import Amenity
+from models.place import Place
+from models.review import Review
+from models.engine.file_storage import FileStorage
+from models.engine.db_storage import DBStorage
+from models import type_of_storage
 
 
 class TestConsole(unittest.TestCase):
+    """this will test the console"""
 
     def setUp(self):
         self.hbtn = HBNBCommand()
 
-    @patch('sys.stdout', new_callable=StringIO)
-    def test_create_without_className(self, mock_stdout):
+    def test_exists(self):
+        """checking for docstrings i think"""
+        self.assertIsNotNone(HBNBCommand.do_quit.__doc__)
+        self.assertIsNotNone(HBNBCommand.do_create.__doc__)
+        self.assertIsNotNone(HBNBCommand.do_show.__doc__)
+        self.assertIsNotNone(HBNBCommand.do_destroy.__doc__)
+        self.assertIsNotNone(HBNBCommand.do_all.__doc__)
+        self.assertIsNotNone(HBNBCommand.do_update.__doc__)
+
+    @classmethod
+    def get_S(cls):
+        """get stringio value and close"""
+        temp_out = StringIO()
+        sys.stdout = temp_out
+        return temp_out.getvalue()
+
+    def test_create_error(self):
+        """test if create works right"""
+        temp_out = StringIO()
+        sys.stdout = temp_out
+
         self.hbtn.onecmd("create")
-        self.assertEqual(mock_stdout.getvalue(), "** class name missing **\n")
+        self.assertEqual(temp_out.getvalue(), '** class name missing **\n')
+        temp_out.close()
 
-    @patch('sys.stdout', new_callable=StringIO)
-    def test_create_invalid_class(self, mock_stdout):
-        self.hbtn.onecmd("create InvaliClass")
-        self.assertEqual(mock_stdout.getvalue(), "** class doesn't exist **\n")
+        temp_out = StringIO()
+        sys.stdout = temp_out
+        HBNBCommand().do_create("base")
+        self.assertEqual(temp_out.getvalue(), '** class doesn\'t exist **\n')
+        temp_out.close()
 
-    @patch('sys.stdout', new_callable=StringIO)
-    def test_create_valid_class(self, mock_stdout):
-        self.hbtn.onecmd("create State")
-        self.assertTrue(mock_stdout.getvalue() != "")
+        temp_out = StringIO()
+        sys.stdout = temp_out
+        if type_of_storage != "db":
+            HBNBCommand().do_create("BaseModel")
+            self.assertTrue(temp_out.getvalue() != "")
+        temp_out.close()
+        sys.stdout = sys.__stdout__
+
+
+if __name__ == "__main__":
+    unittest.main()
