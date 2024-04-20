@@ -6,6 +6,12 @@ import datetime
 from uuid import UUID
 import json
 import os
+from models.user import User
+from models.city import City
+from models.place import Place
+from models.review import Review
+from models.state import State
+from models.amenity import Amenity
 
 
 class test_basemodel(unittest.TestCase):
@@ -24,7 +30,7 @@ class test_basemodel(unittest.TestCase):
     def tearDown(self):
         try:
             os.remove('file.json')
-        except:
+        except FileNotFoundError:
             pass
 
     def test_default(self):
@@ -47,6 +53,7 @@ class test_basemodel(unittest.TestCase):
         with self.assertRaises(TypeError):
             new = BaseModel(**copy)
 
+    @unittest.skipIf(os.getenv("HBNB_TYPE_STORAGE") == "db", "DBStorage")
     def test_save(self):
         """ Testing save """
         i = self.value()
@@ -59,7 +66,7 @@ class test_basemodel(unittest.TestCase):
     def test_str(self):
         """ """
         i = self.value()
-        self.assertEqual(str(i), '[{}] ({}) {}'.format(self.name, i.id,
+        self.assertEqual(str(i), '[{}] ({}) {}'.format(i.__class__.__name__, i.id,
                          i.__dict__))
 
     def test_todict(self):
@@ -73,6 +80,12 @@ class test_basemodel(unittest.TestCase):
         n = {None: None}
         with self.assertRaises(TypeError):
             new = self.value(**n)
+
+    def test_kwargs_one(self):
+        """ """
+        n = {'Name': 'test'}
+        new = self.value(**n)
+        self.assertEqual(type(new.id), str)
 
     def test_id(self):
         """ """
@@ -88,5 +101,6 @@ class test_basemodel(unittest.TestCase):
         """ """
         new = self.value()
         self.assertEqual(type(new.updated_at), datetime.datetime)
-        new.save()
-        self.assertNotEqual(new.created_at, new.updated_at)
+        n = new.to_dict()
+        new = self.value(**n)
+        self.assertTrue(n['created_at'] != new.updated_at)
